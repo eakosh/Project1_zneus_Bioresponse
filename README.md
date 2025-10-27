@@ -2,7 +2,7 @@
 The first project in a pair from the ZNEUS course at FIIT.
 
 TO-DO: 
-- [ ] Data analysis
+- [X] Data analysis
 - [ ] Data preprocessing and normalization
 - [ ] Data split
 - [ ] Configuration
