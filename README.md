@@ -3,8 +3,8 @@ The first project in a pair from the ZNEUS course at FIIT.
 
 TO-DO: 
 - [X] Data analysis
-- [ ] Data preprocessing and normalization
-- [ ] Data split
+- [X] Data preprocessing and normalization
+- [X] Data split
 - [ ] Configuration
 - [ ] Experiment tracking
 - [ ] Experiments - meaningful based on the results of previous experiments
