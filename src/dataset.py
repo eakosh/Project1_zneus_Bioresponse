@@ -1,14 +1,63 @@
-import cv2
-from pathlib import Path
-from typing import Callable
-import urllib.request
-import zipfile
 from torch.utils.data import Dataset
-import numpy as np
-import torch
-import torch.nn.functional as tnf
+from sklearn.feature_selection import VarianceThreshold
+import pandas as pd
+from config import *
 
 
 class BioresponseDataset(Dataset):
-    def __init__(self):
-        self.path = Path("./data/phpSSK7iA.csv")
+    def __init__(self,
+                 path: str = DATA_PATH,
+                 preprocess: bool = True,
+                 remove_duplicates: bool = True,
+                 remove_zero_cols: bool = True,
+                 remove_const_cols: bool = True,
+                 remove_low_variance_cols: bool = True,
+                 variance_threshold: float = 0.01
+                 ):
+        self.path = path
+        self.df = pd.read_csv(path, sep=",")
+        self.remove_duplicates = remove_duplicates
+        self.remove_zero_cols = remove_zero_cols
+        self.remove_const_cols = remove_const_cols
+        self.remove_low_variance_cols = remove_low_variance_cols
+        self.variance_threshold = variance_threshold
+
+        if preprocess:
+            self.preprocess()
+
+        self.X = self.df.drop(columns=['target'])
+        self.y = self.df['target']
+
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        x = self.X.iloc[idx]
+        y = self.y.iloc[idx]
+        return x, y
+
+    def preprocess(self):
+        if self.remove_duplicates:
+            self.df = self.df.drop_duplicates().reset_index(drop=True)
+
+        if self.remove_zero_cols:
+            zero_cols = [c for c in self.df.columns if self.df[c].notna().all() and (self.df[c] == 0).all()]
+            self.df.drop(columns=zero_cols, inplace=True)
+
+        if self.remove_const_cols:
+            const_cols = [c for c in self.df.columns if self.df[c].dropna().nunique() <= 1]
+            self.df.drop(columns=const_cols, inplace=True)
+
+        if self.remove_low_variance_cols:
+            features = [c for c in self.df.columns if c != 'target']
+            X_temp, y = self.df[features], self.df['target']
+            variance = X_temp.var()
+            low_var = variance[variance < self.variance_threshold].index.tolist()
+            if low_var:
+                selector = VarianceThreshold(self.variance_threshold)
+                X_temp = selector.fit_transform(X_temp)
+                selected = [f for f, keep in zip(features, selector.get_support()) if keep]
+                self.df = pd.concat([pd.DataFrame(X_temp, columns=selected, index=self.df.index), y], axis=1)
+
+
