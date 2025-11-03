@@ -5,8 +5,8 @@ TO-DO:
 - [X] Data analysis
 - [X] Data preprocessing and normalization
 - [X] Data split
-- [ ] Configuration
-- [ ] Experiment tracking
+- [X] Configuration
+- [X] Experiment tracking
 - [ ] Experiments - meaningful based on the results of previous experiments
     - [ ] Including improvement techniques (e.g. Dropout, Normalization layers, 
                                         Skip Connections, Bottleneck Layers, …)

@@ -65,24 +65,55 @@ class Trainer:
         self.datamodule.setup()
 
         if USE_WANDB:
-            wandb.init(
+            config = {
+                "learning_rate": LEARNING_RATE,
+                "epochs": EPOCHS,
+                "batch_size": BATCH_SIZE,
+                "early_stopping_patience": EARLY_STOPPING_PATIENCE,
+
+                "architecture": "MultiLayerPerceptron",
+                "model_string": str(self.model),
+                "num_features": self.datamodule.num_x,
+                "total_params": sum(p.numel() for p in self.model.parameters()),
+                "trainable_params": sum(p.numel() for p in self.model.parameters() if p.requires_grad),
+
+                "optimizer": type(self.optimizer).__name__,
+                "loss_function": type(self.loss_fn).__name__,
+
+                "train_size": len(self.datamodule.train_dataset),
+                "val_size": len(self.datamodule.val_dataset),
+                "test_size": len(self.datamodule.test_dataset),
+                "test_split": TEST_SIZE,
+                "val_split": VAL_SIZE,
+                "random_state": RANDOM_STATE,
+                "stratify": STRATIFY,
+
+                "preprocess": PREPROCESS,
+                "remove_duplicates": REMOVE_DUPLICATES,
+                "remove_zero_columns": REMOVE_ZERO_COLUMNS,
+                "remove_constant_columns": REMOVE_CONSTANT_COLUMNS,
+                "remove_low_variance_columns": REMOVE_LOW_VARIANCE_COLUMNS,
+                "variance_threshold": VARIANCE_THRESHOLD,
+
+                "feature_selection": APPLY_FEATURE_SELECTION,
+                "feature_selection_methods": FEATURE_SELECTION_METHOD if APPLY_FEATURE_SELECTION else None,
+                "top_n_features": TOP_N_FEATURES if APPLY_FEATURE_SELECTION else self.datamodule.num_x,
+                "selected_features": self.datamodule.num_x,
+
+                "normalization": NORMALIZATION_METHOD,
+
+                "device": str(self.device),
+                "experiment_name": EXPERIMENT_NAME,
+                "save_best_model": SAVE_BEST_MODEL,
+            }
+
+            self.run = wandb.init(
                 project=WANDB_PROJECT,
                 entity=WANDB_ENTITY,
                 name=EXPERIMENT_NAME,
-                config={
-                    "learning_rate": LEARNING_RATE,
-                    "epochs": EPOCHS,
-                    "batch_size": BATCH_SIZE,
-                    "architecture": str(self.model),
-                    "optimizer": type(self.optimizer).__name__,
-                    "loss_function": type(self.loss_fn).__name__,
-                    "normalization": NORMALIZATION_METHOD,
-                    "feature_selection": APPLY_FEATURE_SELECTION,
-                    "num_features": self.datamodule.num_x,
-                    "early_stopping_patience": EARLY_STOPPING_PATIENCE
-                }
+                config=config
             )
-            wandb.watch(self.model, log="all", log_freq=100)
+
 
     def fit(self):
 
@@ -96,7 +127,7 @@ class Trainer:
             self.val_metrics.append(val_metrics)
 
             if USE_WANDB:
-                wandb.log({
+                self.run.log({
                     "epoch": epoch,
                     "train_loss": train_loss,
                     "val_loss": val_loss,
@@ -123,10 +154,10 @@ class Trainer:
             else:
                 self.patience_counter += 1
 
-
-            if self.patience_counter >= EARLY_STOPPING_PATIENCE:
-                print(f"\nEarly stopping triggered after {epoch+1} epochs")
-                break
+            if APPLY_EARLY_STOPPING_PATIENCE:
+                if self.patience_counter >= EARLY_STOPPING_PATIENCE:
+                    print(f"\nEarly stopping triggered after {epoch+1} epochs")
+                    break
 
         if SAVE_BEST_MODEL and self.best_model_state is not None:
             self.model.load_state_dict(self.best_model_state)
@@ -220,22 +251,14 @@ class Trainer:
                     all_preds.extend(preds.cpu().numpy())
                     all_probs.extend(probs.cpu().numpy())
                     all_targets.extend(y.cpu().numpy())
-                    all_targets.extend(y.cpu().numpy())
 
                     progress.set_postfix({"loss": f"{loss.item():.4f}"})
 
         test_metrics = self.compute_metrics(all_targets, all_preds, all_probs)
         avg_test_loss = test_loss / num_batches
 
-        if USE_WANDB:
-            wandb.log({
-                "test_loss": avg_test_loss,
-                "test_accuracy": test_metrics['accuracy'],
-                "test_precision": test_metrics['precision'],
-                "test_recall": test_metrics['recall'],
-                "test_f1": test_metrics['f1'],
-                "test_roc_auc": test_metrics['roc_auc']
-            })
+        self.run.summary["test_loss"] = avg_test_loss
+        self.run.summary["test_metrics"] = test_metrics
 
         return test_metrics
 
@@ -316,11 +339,21 @@ class Trainer:
         print(f"\nTraining plots saved to: {plot_path}")
 
         if USE_WANDB:
-            wandb.log({"training_history": wandb.Image(fig)})
+            self.run.log({"training_history": wandb.Image(fig)})
 
         plt.close()
 
     def finish(self):
         if USE_WANDB:
-            wandb.finish()
+            summary_dict = {
+                "best_val_loss": self.best_val_loss,
+                "best_val_f1": self.best_val_f1,
+                "total_epochs_trained": len(self.train_losses),
+                "early_stopped": len(self.train_losses) < EPOCHS,
+            }
+
+            for key, value in summary_dict.items():
+                self.run.summary[key] = value
+
+            self.run.finish()
 
