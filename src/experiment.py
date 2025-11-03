@@ -9,6 +9,7 @@ from trainer import Trainer
 
 def main():
 
+    print("Loading and preparing data...")
     datamodule = DataModule()
     datamodule.setup()
 
@@ -18,13 +19,16 @@ def main():
         nout=1,
     )
 
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     loss_fn = nn.BCEWithLogitsLoss()
 
     trainer = Trainer(epochs=EPOCHS, model=model, loss_fn=loss_fn, optimizer=optimizer)
     trainer.setup(datamodule)
     trainer.fit()
     trainer.test()
+
+    if USE_WANDB:
+        trainer.finish()
 
 
 if __name__ == "__main__":
