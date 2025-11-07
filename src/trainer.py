@@ -1,16 +1,12 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from tqdm import tqdm
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import matplotlib.pyplot as plt
 import os
 
-from datamodule import DataModule
-from model import MultiLayerPerceptron
 from config import *
-from utils import decide_device
+
 
 if USE_WANDB:
     import warnings
@@ -42,8 +38,14 @@ if USE_WANDB:
     import wandb
 
 
+def decide_device():
+    if (torch.cuda.is_available()): return "cuda"
+    if (torch.backends.mps.is_available()): return "mps"
+    return "cpu"
+
+
 class Trainer:
-    def __init__(self, model, optimizer, loss_fn, epochs):
+    def __init__(self, model, optimizer, loss_fn, epochs, apply_early_stopping, early_stopping_patience):
         self.device = torch.device(decide_device())
         self.model = model.to(self.device)
         self.optimizer = optimizer
@@ -57,6 +59,8 @@ class Trainer:
         self.best_val_f1 = 0.0
         self.best_model_state = None
         self.patience_counter = 0
+        self.apply_early_stopping = apply_early_stopping
+        self.early_stopping_patience = early_stopping_patience
 
         os.makedirs(EXPERIMENT_PATH, exist_ok=True)
 
@@ -69,7 +73,7 @@ class Trainer:
                 "learning_rate": LEARNING_RATE,
                 "epochs": EPOCHS,
                 "batch_size": BATCH_SIZE,
-                "early_stopping_patience": EARLY_STOPPING_PATIENCE,
+                "early_stopping_patience": self.early_stopping_patience,
 
                 "architecture": "MultiLayerPerceptron",
                 "model_string": str(self.model),
@@ -154,8 +158,8 @@ class Trainer:
             else:
                 self.patience_counter += 1
 
-            if APPLY_EARLY_STOPPING_PATIENCE:
-                if self.patience_counter >= EARLY_STOPPING_PATIENCE:
+            if self.apply_early_stopping:
+                if self.patience_counter >= self.early_stopping_patience:
                     print(f"\nEarly stopping triggered after {epoch+1} epochs")
                     break
 
@@ -163,7 +167,7 @@ class Trainer:
             self.model.load_state_dict(self.best_model_state)
             print(f"\nBest model loaded: (Val Loss: {self.best_val_loss:.4f}, F1: {self.best_val_f1:.4f})")
 
-        # Сохраняем графики
+
         self.plot_training_history()
 
 

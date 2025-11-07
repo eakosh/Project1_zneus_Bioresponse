@@ -1,6 +1,7 @@
-from torch.utils.data import Dataset
-from sklearn.feature_selection import VarianceThreshold
 import pandas as pd
+from sklearn.feature_selection import VarianceThreshold
+
+from torch.utils.data import Dataset
 from config import *
 
 
@@ -12,6 +13,7 @@ class BioresponseDataset(Dataset):
                  remove_zero_cols: bool = True,
                  remove_const_cols: bool = True,
                  remove_low_variance_cols: bool = True,
+                 remove_outliares: bool = True,
                  variance_threshold: float = 0.01
                  ):
         self.path = path
@@ -21,6 +23,7 @@ class BioresponseDataset(Dataset):
         self.remove_const_cols = remove_const_cols
         self.remove_low_variance_cols = remove_low_variance_cols
         self.variance_threshold = variance_threshold
+        self.remove_outliares = remove_outliares
 
         if preprocess:
             self.preprocess()
@@ -59,5 +62,3 @@ class BioresponseDataset(Dataset):
                 X_temp = selector.fit_transform(X_temp)
                 selected = [f for f, keep in zip(features, selector.get_support()) if keep]
                 self.df = pd.concat([pd.DataFrame(X_temp, columns=selected, index=self.df.index), y], axis=1)
-
-

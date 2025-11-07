@@ -1,3 +1,4 @@
+import random
 import torch.nn as nn
 import torch.optim as optim
 
@@ -6,23 +7,26 @@ from model import MultiLayerPerceptron
 from config import *
 from trainer import Trainer
 
+random.seed(RANDOM_STATE)
 
 def main():
 
-    print("Loading and preparing data...")
+    print("Loading and preparing data")
     datamodule = DataModule()
     datamodule.setup()
 
     model = MultiLayerPerceptron(
         nin=datamodule.num_x,
-        nhidden=[128, 64, 32, 16, 8],
+        nhidden=[128, 64, 32],
         nout=1,
     )
 
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    loss_fn = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+    loss_fn = nn.BCELoss()
 
-    trainer = Trainer(epochs=EPOCHS, model=model, loss_fn=loss_fn, optimizer=optimizer)
+    trainer = Trainer(epochs=EPOCHS, model=model, loss_fn=loss_fn, optimizer=optimizer,
+                      apply_early_stopping=APPLY_EARLY_STOPPING_PATIENCE,
+                      early_stopping_patience=EARLY_STOPPING_PATIENCE)
     trainer.setup(datamodule)
     trainer.fit()
     trainer.test()

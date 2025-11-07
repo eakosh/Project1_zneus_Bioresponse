@@ -22,7 +22,8 @@ class DataModule():
                  num_features: int = TOP_N_FEATURES,
                  batch_size: int = BATCH_SIZE,
                  num_workers: int = NUM_WORKERS,
-                 shuffle: bool = SHUFFLE):
+                 shuffle: bool = SHUFFLE,
+                 variance_threshold: float = VARIANCE_THRESHOLD):
 
         self.dataset = BioresponseDataset(
             path=DATA_PATH,
@@ -31,7 +32,7 @@ class DataModule():
             remove_zero_cols=REMOVE_ZERO_COLUMNS,
             remove_const_cols=REMOVE_CONSTANT_COLUMNS,
             remove_low_variance_cols=REMOVE_LOW_VARIANCE_COLUMNS,
-            variance_threshold=VARIANCE_THRESHOLD
+            variance_threshold=variance_threshold,
         )
         self.normalization = normalization
         self.stratify = stratify
@@ -69,7 +70,7 @@ class DataModule():
                                            batch_size=self.batch_size,
                                            shuffle=self.shuffle,
                                            num_workers=self.num_workers,
-                                           drop_last=False)
+                                           drop_last=True)
         self.dataloader_val = DataLoader(self.val_dataset,
                                         batch_size=self.batch_size,
                                         shuffle=False,
