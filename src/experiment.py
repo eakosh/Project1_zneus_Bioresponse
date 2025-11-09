@@ -1,3 +1,5 @@
+"""Main training script — runs full pipeline for model training, validation, and testing."""
+
 import torch.nn as nn
 import torch.optim as optim
 
@@ -8,8 +10,9 @@ from trainer import Trainer
 
 
 def main():
-
+    """Execute full training workflow."""
     print("Loading and preparing data")
+
     datamodule = DataModule()
     datamodule.setup()
 
@@ -22,9 +25,15 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     loss_fn = nn.BCELoss()
 
-    trainer = Trainer(epochs=EPOCHS, model=model, loss_fn=loss_fn, optimizer=optimizer,
-                      apply_early_stopping=APPLY_EARLY_STOPPING_PATIENCE,
-                      early_stopping_patience=EARLY_STOPPING_PATIENCE)
+    trainer = Trainer(
+        epochs=EPOCHS,
+        model=model,
+        loss_fn=loss_fn,
+        optimizer=optimizer,
+        apply_early_stopping=APPLY_EARLY_STOPPING_PATIENCE,
+        early_stopping_patience=EARLY_STOPPING_PATIENCE
+    )
+
     trainer.setup(datamodule)
     trainer.fit()
     trainer.test()

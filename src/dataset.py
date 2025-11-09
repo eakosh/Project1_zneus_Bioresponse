@@ -1,11 +1,12 @@
 import pandas as pd
 from sklearn.feature_selection import VarianceThreshold
-
 from torch.utils.data import Dataset
 from config import *
 
 
 class BioresponseDataset(Dataset):
+    """Dataset for bioresponse data with preprocessing options."""
+
     def __init__(self,
                  path: str = DATA_PATH,
                  preprocess: bool = True,
@@ -14,8 +15,8 @@ class BioresponseDataset(Dataset):
                  remove_const_cols: bool = True,
                  remove_low_variance_cols: bool = True,
                  remove_outliers: bool = True,
-                 variance_threshold: float = 0.01
-                 ):
+                 variance_threshold: float = 0.01):
+        """Load dataset and optionally preprocess it."""
         self.path = path
         self.df = pd.read_csv(path, sep=",")
         self.remove_duplicates = remove_duplicates
@@ -31,16 +32,18 @@ class BioresponseDataset(Dataset):
         self.X = self.df.drop(columns=['target'])
         self.y = self.df['target']
 
-
     def __len__(self):
+        """Return dataset length."""
         return len(self.df)
 
     def __getitem__(self, idx):
+        """Return one sample (features, target)."""
         x = self.X.iloc[idx]
         y = self.y.iloc[idx]
         return x, y
 
     def preprocess(self):
+        """Clean dataset by removing duplicates, constants, and low-variance features."""
         if self.remove_duplicates:
             self.df = self.df.drop_duplicates().reset_index(drop=True)
 
