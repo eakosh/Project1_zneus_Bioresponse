@@ -11,7 +11,7 @@ from dataset import BioresponseDataset
 
 
 class DataModule:
-    """Handles data loading, preprocessing, feature selection, normalization, and creaing DataLoader."""
+    """Handles data loading, preprocessing, feature selection, normalization, and creating DataLoader."""
 
     def __init__(self,
                  normalization: str = NORMALIZATION_METHOD,

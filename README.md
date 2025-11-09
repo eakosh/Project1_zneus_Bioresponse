@@ -13,4 +13,4 @@ TO-DO:
 - [X] Hyperparameter search (grid/random) / sweep
 - [X] Results and evaluation metrics
 - [X] Clear code
-- [ ] Markdown documentation and comments
+- [X] Markdown documentation and comments

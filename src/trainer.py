@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import os
 from config import *
 
+
+# for warning from wandb
 if USE_WANDB:
     import warnings
 
@@ -61,7 +63,7 @@ class Trainer:
         os.makedirs(EXPERIMENT_PATH, exist_ok=True)
 
     def setup(self, datamodule):
-        """Initialize datamodule and setup experiment tracking (W&B)."""
+        """Initialize datamodule and setup experiment tracking"""
         self.datamodule = datamodule
         self.datamodule.setup()
 
