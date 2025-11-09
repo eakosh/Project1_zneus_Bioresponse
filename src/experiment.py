@@ -1,4 +1,3 @@
-import random
 import torch.nn as nn
 import torch.optim as optim
 
@@ -7,7 +6,6 @@ from model import MultiLayerPerceptron
 from config import *
 from trainer import Trainer
 
-random.seed(RANDOM_STATE)
 
 def main():
 

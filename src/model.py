@@ -2,6 +2,7 @@ import torch.nn as nn
 
 from config import *
 
+
 class MultiLayerPerceptron(nn.Module):
     def __init__(self,
                  nin,
@@ -19,7 +20,8 @@ class MultiLayerPerceptron(nn.Module):
         for hidden_dim in nhidden:
             layers.extend([
                 nn.Linear(prev_dim, hidden_dim),
-                nn.BatchNorm1d(hidden_dim),
+                # nn.BatchNorm1d(hidden_dim),
+                nn.LayerNorm(hidden_dim),
                 nn.ReLU(),
                 nn.Dropout(dropout),
             ])

@@ -13,7 +13,7 @@ class BioresponseDataset(Dataset):
                  remove_zero_cols: bool = True,
                  remove_const_cols: bool = True,
                  remove_low_variance_cols: bool = True,
-                 remove_outliares: bool = True,
+                 remove_outliers: bool = True,
                  variance_threshold: float = 0.01
                  ):
         self.path = path
@@ -23,7 +23,7 @@ class BioresponseDataset(Dataset):
         self.remove_const_cols = remove_const_cols
         self.remove_low_variance_cols = remove_low_variance_cols
         self.variance_threshold = variance_threshold
-        self.remove_outliares = remove_outliares
+        self.remove_outliers = remove_outliers
 
         if preprocess:
             self.preprocess()

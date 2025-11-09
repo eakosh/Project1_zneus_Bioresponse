@@ -215,11 +215,10 @@ class Trainer:
                     epoch_loss += loss.item()
                     num_batches += 1
 
-                    probs = torch.sigmoid(y_hat)
-                    preds = (probs > 0.5).float()
+                    preds = (y_hat > 0.5).float()
 
                     all_preds.extend(preds.cpu().numpy())
-                    all_probs.extend(probs.cpu().numpy())
+                    all_probs.extend(y_hat.cpu().numpy())
                     all_targets.extend(y.cpu().numpy())
 
                     progress.set_postfix({"loss": f"{loss.item():.4f}"})
@@ -249,11 +248,10 @@ class Trainer:
                     test_loss += loss.item()
                     num_batches += 1
 
-                    probs = torch.sigmoid(y_hat)
-                    preds = (probs > 0.5).float()
+                    preds = (y_hat > 0.5).float()
 
                     all_preds.extend(preds.cpu().numpy())
-                    all_probs.extend(probs.cpu().numpy())
+                    all_probs.extend(y_hat.cpu().numpy())
                     all_targets.extend(y.cpu().numpy())
 
                     progress.set_postfix({"loss": f"{loss.item():.4f}"})

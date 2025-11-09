@@ -7,12 +7,10 @@ TO-DO:
 - [X] Data split
 - [X] Configuration
 - [X] Experiment tracking
-- [ ] Experiments - meaningful based on the results of previous experiments
-    - [ ] Including improvement techniques (e.g. Dropout, Normalization layers, 
+- [X] Experiments - meaningful based on the results of previous experiments
+    - [X] Including improvement techniques (e.g. Dropout, Normalization layers, 
                                         Skip Connections, Bottleneck Layers, …)
-- [ ] Hyperparameter search (grid/random) / sweep
-- [ ] Results and evaluation metrics
-- [ ] Clear code
+- [X] Hyperparameter search (grid/random) / sweep
+- [X] Results and evaluation metrics
+- [X] Clear code
 - [ ] Markdown documentation and comments
-- [ ] Final presentation of projects
-- [ ] Effort on consultations
